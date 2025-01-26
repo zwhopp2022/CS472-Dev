@@ -147,25 +147,6 @@ arp_packet_t *process_arp(raw_packet_t raw_packet)
  */
 void print_arp(arp_packet_t *arp)
 {
-    // TODO:  take the arp parameter, of type arp_packet_t and print it out
-    // nicely.  My output looks like below, but you dont have to make it look
-    // exactly like this, just something nice.
-    /*
-    Packet length = 60 bytes
-    Detected raw frame type from ethernet header: 0x806
-    Packet type = ARP
-    ARP PACKET DETAILS
-         htype:     0x0001
-         ptype:     0x0800
-         hlen:      6
-         plen:      4
-         op:        1 (ARP REQUEST)
-         spa:       192.168.50.1
-         sha:       a0:36:bc:62:ed:50
-         tpa:       192.168.50.99
-         tha:       00:00:00:00:00:00
-     */
-
     printf("ARP PACKET DETAILS\nhtype: 0x%04x\nptype: 0x%04x\nhlen: %u\nplen: %u\nop: %x\nspa: ", arp->arp_hdr.htype, arp->arp_hdr.ptype, arp->arp_hdr.hlen, arp->arp_hdr.plen, arp->arp_hdr.op);
     for (int i = 0; i < IP4_ALEN; i++)
     {
