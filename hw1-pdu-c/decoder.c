@@ -209,13 +209,10 @@ void print_arp(arp_packet_t *arp)
  */
 bool check_ip_for_icmp(ip_packet_t *ip)
 {
-    // TODO:  This function inspects the provided IP packet and extracts
-    // the protocol.  If the protocol is ICMP_PTYPE then we return true
-    // otherwise we return false.  The function header gives some more
-    // hints.
-
-    // remove this after you implement the logic, just here to make sure
-    // the program compiles
+    if (ip->ip_hdr.protocol == ICMP_PTYPE)
+    {
+        return true;
+    }
     return false;
 }
 
@@ -228,15 +225,15 @@ bool check_ip_for_icmp(ip_packet_t *ip)
  */
 icmp_packet_t *process_icmp(ip_packet_t *ip)
 {
-    // TODO: Implement this function.  Convert ip_packet via
-    // type conversion to icmp_packet_t and then convert the
-    // network byte order fields to host byte order fields using
-    // ntohs() and/or ntohl().  Return a pointer to an icmp_packet_t
-    // You do not need to allocate any memory.
+    icmp_packet_t *icmp_packet = (icmp_packet_t *)ip;
 
-    // remove this after you implement the logic, just here to make sure
-    // the program compiles
-    return (icmp_packet_t *)ip;
+    icmp_packet->icmp_hdr.checksum = ntohs(icmp_packet->icmp_hdr.checksum);
+
+    icmp_packet->ip.eth_hdr.frame_type = ntohs(icmp_packet->ip.eth_hdr.frame_type);
+    icmp_packet->ip.ip_hdr.total_length = ntohs(icmp_packet->ip.ip_hdr.total_length);
+    icmp_packet->ip.ip_hdr.identification = ntohs(icmp_packet->ip.ip_hdr.identification);
+    icmp_packet->ip.ip_hdr.header_checksum = ntohs(icmp_packet->ip.ip_hdr.header_checksum);
+    return icmp_packet;
 }
 
 /*
@@ -247,14 +244,10 @@ icmp_packet_t *process_icmp(ip_packet_t *ip)
  */
 bool is_icmp_echo(icmp_packet_t *icmp)
 {
-    // TODO:  This function inspects the provided ICMP and checks
-    // its type.  If the type is ICMP_ECHO_REQUEST or ICMP_ECHO_RESPONSE
-    // then reutrn true otherwise we return false.  The function header
-    // gives some more hints.  The constants are defined in packet.h so take
-    // a look there as well.
-
-    // remove this after you implement the logic, just here to make sure
-    // the program compiles
+    if (icmp->icmp_hdr.type == ICMP_ECHO_REQUEST || icmp->icmp_hdr.type == ICMP_ECHO_RESPONSE)
+    {
+        return true;
+    }
     return false;
 }
 
@@ -266,15 +259,21 @@ bool is_icmp_echo(icmp_packet_t *icmp)
  */
 icmp_echo_packet_t *process_icmp_echo(icmp_packet_t *icmp)
 {
-    // TODO: Implement this function.  Convert icmp_packet_t via
-    // type conversion to icmp_echo_packet_t and then convert the
-    // network byte order fields to host byte order fields using
-    // ntohs() and/or ntohl().  Return a pointer to an icmp_echo_packet_t
-    // You do not need to allocate any memory.
+    icmp_echo_packet_t *icmp_echo = (icmp_echo_packet_t *)icmp;
+    icmp_echo->icmp_echo_hdr.id = ntohs(icmp_echo->icmp_echo_hdr.id);
+    icmp_echo->icmp_echo_hdr.sequence = ntohs(icmp_echo->icmp_echo_hdr.sequence);
+    icmp_echo->icmp_echo_hdr.timestamp = ntohl(icmp_echo->icmp_echo_hdr.timestamp);
+    icmp_echo->icmp_echo_hdr.timestamp_ms = ntohl(icmp_echo->icmp_echo_hdr.timestamp_ms);
 
-    // remove this after you implement the logic, just here to make sure
-    // the program compiles
-    return (icmp_echo_packet_t *)icmp;
+    //    icmp_echo->icmp_echo_hdr.icmp_hdr.checksum = ntohs(icmp_echo->icmp_echo_hdr.icmp_hdr.checksum);
+
+    icmp_echo->ip.eth_hdr.frame_type = ntohs(icmp_echo->ip.eth_hdr.frame_type);
+
+    icmp_echo->ip.ip_hdr.header_checksum = ntohs(icmp_echo->ip.ip_hdr.header_checksum);
+    icmp_echo->ip.ip_hdr.identification = ntohs(icmp_echo->ip.ip_hdr.identification);
+    icmp_echo->ip.ip_hdr.total_length = ntohs(icmp_echo->ip.ip_hdr.total_length);
+
+    return icmp_echo;
 }
 
 /*
@@ -308,14 +307,13 @@ void print_icmp_echo(icmp_echo_packet_t *icmp_packet)
      */
 
     // remove this, just a placeholder
-    printf("This is where you place your logic to print your ICMP echo PDU header\n");
-
     // after you print the echo header, print the payload.
 
     // We can calculate the payload size using a macro i provided for you in
     // packet.h. Check it out, but I am providing you the code to call it here
     // correctly.  You can thank me later.
     uint16_t payload_size = ICMP_Payload_Size(icmp_packet);
+    printf("ICMP PACKET DETAILS\ntype: 0x%02x\nchecksum: 0x%04x\nid: 0x%04x\nsequence: 0x%04x\ntimestamp: 0x%x\npayload: %u bytes\n", icmp_packet->icmp_echo_hdr.icmp_hdr.type, icmp_packet->icmp_echo_hdr.icmp_hdr.checksum, icmp_packet->icmp_echo_hdr.id, icmp_packet->icmp_echo_hdr.sequence, icmp_packet->icmp_echo_hdr.timestamp, payload_size);
 
     // Now print the payload data
     print_icmp_payload(icmp_packet->icmp_payload, payload_size);
@@ -357,8 +355,18 @@ void print_icmp_payload(uint8_t *payload, uint16_t payload_size)
     // function header, you can alter your output just make sure it looks
     // nice.  I provided the alogorithm for how I printed the above out
     // in the function header.
+    int line_length = 8;
+    for (int i = 0; i < payload_size; i++)
+    {
+        if (i % line_length == 0)
+        {
+            printf("Offset: 0x%04x\tContents:\t", i);
+        }
+        printf("0x%02x\t", payload[i]);
 
-    printf("delete this, but this is where your output goes\n");
-    printf("This is how to print a hex 5 nicely: %02x\n", 5);
-    printf("This is how to print a long value of 20000 nicely: %04lx\n", 2000l);
+        if ((i % line_length) == (line_length - 1))
+        {
+            printf("\n");
+        }
+    }
 }
