@@ -350,11 +350,6 @@ void print_icmp_echo(icmp_echo_packet_t *icmp_packet)
  */
 void print_icmp_payload(uint8_t *payload, uint16_t payload_size)
 {
-    // TODO:  this function takes the payload which is just basically an
-    // array of bytes and prints it out nicely.  My output is shown in the
-    // function header, you can alter your output just make sure it looks
-    // nice.  I provided the alogorithm for how I printed the above out
-    // in the function header.
     int line_length = 8;
     for (int i = 0; i < payload_size; i++)
     {
