@@ -19,7 +19,8 @@
 test_packet_t TEST_CASES[] = {
     MAKE_PACKET(raw_packet_icmp_frame198),
     MAKE_PACKET(raw_packet_icmp_frame362),
-    MAKE_PACKET(raw_packet_arp_frame78)};
+    MAKE_PACKET(raw_packet_arp_frame78),
+    MAKE_PACKET(raw_icmp_packet_frame200)};
 
 // !!!!!!!!!!!!!!!!!!!!! WHAT YOU NEED TO DO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //
@@ -231,6 +232,7 @@ icmp_packet_t *process_icmp(ip_packet_t *ip)
 
     icmp_packet->ip.eth_hdr.frame_type = ntohs(icmp_packet->ip.eth_hdr.frame_type);
     icmp_packet->ip.ip_hdr.total_length = ntohs(icmp_packet->ip.ip_hdr.total_length);
+
     icmp_packet->ip.ip_hdr.identification = ntohs(icmp_packet->ip.ip_hdr.identification);
     icmp_packet->ip.ip_hdr.header_checksum = ntohs(icmp_packet->ip.ip_hdr.header_checksum);
     return icmp_packet;
@@ -267,11 +269,11 @@ icmp_echo_packet_t *process_icmp_echo(icmp_packet_t *icmp)
 
     //    icmp_echo->icmp_echo_hdr.icmp_hdr.checksum = ntohs(icmp_echo->icmp_echo_hdr.icmp_hdr.checksum);
 
-    icmp_echo->ip.eth_hdr.frame_type = ntohs(icmp_echo->ip.eth_hdr.frame_type);
+    // icmp_echo->ip.eth_hdr.frame_type = ntohs(icmp_echo->ip.eth_hdr.frame_type);
 
-    icmp_echo->ip.ip_hdr.header_checksum = ntohs(icmp_echo->ip.ip_hdr.header_checksum);
-    icmp_echo->ip.ip_hdr.identification = ntohs(icmp_echo->ip.ip_hdr.identification);
-    icmp_echo->ip.ip_hdr.total_length = ntohs(icmp_echo->ip.ip_hdr.total_length);
+    // icmp_echo->ip.ip_hdr.header_checksum = ntohs(icmp_echo->ip.ip_hdr.header_checksum);
+    // icmp_echo->ip.ip_hdr.identification = ntohs(icmp_echo->ip.ip_hdr.identification);
+    // icmp_echo->ip.ip_hdr.total_length = ntohs(icmp_echo->ip.ip_hdr.total_length);
 
     return icmp_echo;
 }
@@ -312,9 +314,18 @@ void print_icmp_echo(icmp_echo_packet_t *icmp_packet)
     // We can calculate the payload size using a macro i provided for you in
     // packet.h. Check it out, but I am providing you the code to call it here
     // correctly.  You can thank me later.
+    icmp_packet->ip.ip_hdr.total_length = ntohs(icmp_packet->ip.ip_hdr.total_length); // convert back to BE for ICMP_Payload_size
     uint16_t payload_size = ICMP_Payload_Size(icmp_packet);
-    printf("ICMP PACKET DETAILS\ntype: 0x%02x\nchecksum: 0x%04x\nid: 0x%04x\nsequence: 0x%04x\ntimestamp: 0x%x\npayload: %u bytes\n", icmp_packet->icmp_echo_hdr.icmp_hdr.type, icmp_packet->icmp_echo_hdr.icmp_hdr.checksum, icmp_packet->icmp_echo_hdr.id, icmp_packet->icmp_echo_hdr.sequence, icmp_packet->icmp_echo_hdr.timestamp, payload_size);
+    printf("ICMP Type %d\n", (int)icmp_packet->icmp_echo_hdr.icmp_hdr.type);
+    printf("ICMP PACKET DETAILS\ntype: 0x%02x\nchecksum: 0x%04x\nid: 0x%04x\nsequence: 0x%04x\ntimestamp: 0x%x\npayload: %u bytes\nECHO Timestamp: ", icmp_packet->icmp_echo_hdr.icmp_hdr.type, icmp_packet->icmp_echo_hdr.icmp_hdr.checksum, icmp_packet->icmp_echo_hdr.id, icmp_packet->icmp_echo_hdr.sequence, icmp_packet->icmp_echo_hdr.timestamp, payload_size);
 
+    // separate time stamp and print
+    uint32_t seconds = icmp_packet->icmp_echo_hdr.timestamp / 1000;
+    int timeHour = (seconds / 3600) % 24;
+    int relativeSeconds = seconds % 60;
+    int timeMinutes = (seconds % 3600) / 60;
+    int milliseconds = icmp_packet->icmp_echo_hdr.timestamp_ms;
+    printf("%02d:%02d:%02d.%d\n", timeHour, timeMinutes, relativeSeconds, milliseconds);
     // Now print the payload data
     print_icmp_payload(icmp_packet->icmp_payload, payload_size);
 }
