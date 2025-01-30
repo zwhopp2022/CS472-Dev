@@ -267,14 +267,6 @@ icmp_echo_packet_t *process_icmp_echo(icmp_packet_t *icmp)
     icmp_echo->icmp_echo_hdr.timestamp = ntohl(icmp_echo->icmp_echo_hdr.timestamp);
     icmp_echo->icmp_echo_hdr.timestamp_ms = ntohl(icmp_echo->icmp_echo_hdr.timestamp_ms);
 
-    //    icmp_echo->icmp_echo_hdr.icmp_hdr.checksum = ntohs(icmp_echo->icmp_echo_hdr.icmp_hdr.checksum);
-
-    // icmp_echo->ip.eth_hdr.frame_type = ntohs(icmp_echo->ip.eth_hdr.frame_type);
-
-    // icmp_echo->ip.ip_hdr.header_checksum = ntohs(icmp_echo->ip.ip_hdr.header_checksum);
-    // icmp_echo->ip.ip_hdr.identification = ntohs(icmp_echo->ip.ip_hdr.identification);
-    // icmp_echo->ip.ip_hdr.total_length = ntohs(icmp_echo->ip.ip_hdr.total_length);
-
     return icmp_echo;
 }
 
