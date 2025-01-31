@@ -282,30 +282,6 @@ icmp_echo_packet_t *process_icmp_echo(icmp_packet_t *icmp)
  */
 void print_icmp_echo(icmp_echo_packet_t *icmp_packet)
 {
-    // TODO:  take the icmp_packet parameter, of type icmp_echo_packet_t
-    // and print it out nicely.  My output looks like below, but you dont
-    // have to make it look exactly like this, just something nice.
-    /*
-    Packet length = 98 bytes
-    Detected raw frame type from ethernet header: 0x800
-    Frame type = IPv4, now lets check for ICMP...
-    ICMP Type 8
-    ICMP PACKET DETAILS
-         type:      0x08
-         checksum:  0x7bda
-         id:        0x4859
-         sequence:  0x0000
-         timestamp: 0x650e01eee1cc
-         payload:   48 bytes
-         ECHO Timestamp: TS = 2023-09-22 21:06:54.57804
-     */
-
-    // remove this, just a placeholder
-    // after you print the echo header, print the payload.
-
-    // We can calculate the payload size using a macro i provided for you in
-    // packet.h. Check it out, but I am providing you the code to call it here
-    // correctly.  You can thank me later.
     icmp_packet->ip.ip_hdr.total_length = ntohs(icmp_packet->ip.ip_hdr.total_length); // convert back to BE for ICMP_Payload_size
     uint16_t payload_size = ICMP_Payload_Size(icmp_packet);
     printf("ICMP Type %d\n", (int)icmp_packet->icmp_echo_hdr.icmp_hdr.type);
