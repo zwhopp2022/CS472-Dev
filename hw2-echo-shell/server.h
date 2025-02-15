@@ -1,6 +1,7 @@
 #pragma once
 
-typedef struct course_item_t {
+typedef struct course_item_t
+{
     char *id;
     char *description;
 } course_item_t;
