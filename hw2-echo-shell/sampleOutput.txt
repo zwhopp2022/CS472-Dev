@@ -1,0 +1,10 @@
+HEADER VALUES 
+  Proto Type:    PROTO_CS_FUN
+  Proto Ver:     VERSION_1
+  Command:       CMD_CLASS_INFO
+  Direction:     DIR_RECV
+  Term:          TERM_WINTER 
+  Course:        cs281
+  Pkt Len:       12
+
+RECV FROM SERVER -> CS281: Hello from computer architecture
