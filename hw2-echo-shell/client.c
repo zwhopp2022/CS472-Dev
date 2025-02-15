@@ -140,17 +140,6 @@ static void start_client(cs472_proto_header_t *header, uint8_t *packet)
     addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     addr.sin_port = htons(PORT_NUM);
 
-    /*
-     * TODO:  The next things you need to do is to handle the cleint
-     * socket to send things to the server, basically make the following
-     * calls:
-     *
-     *      connect()
-     *      send() - recall that the formatted packet is passed in
-     *      recv() - get the response back from the server
-     */
-
-    // Now process what the server sent, here is some helper code
     if (connect(data_socket, (struct sockaddr *)&addr, sizeof(addr)) == 0)
     {
         send(data_socket, packet, sizeof(cs472_proto_header_t), 0);

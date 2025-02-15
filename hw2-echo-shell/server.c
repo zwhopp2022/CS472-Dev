@@ -57,6 +57,7 @@ static void process_requests(int listen_socket)
     int data_socket;
     course_item_t *details;
     int ret;
+    int sent;
 
     // again, not the best approach, need ctrl-c to exit
     while (1)
@@ -93,21 +94,21 @@ static void process_requests(int listen_socket)
         case CMD_CLASS_INFO:
             // sprintf(msg_out_buffer, class_msg, header.course);
             details = lookup_course_by_id(header.course);
-            prepare_req_packet(&header, (uint8_t *)details->description,
-                               strlen(details->description), send_buffer, sizeof(send_buffer));
+            sent = prepare_req_packet(&header, (uint8_t *)details->description,
+                                      strlen(details->description), send_buffer, sizeof(send_buffer));
             break;
         case CMD_PING_PONG:
             strcpy(msg_out_buffer, "PONG: ");
             memcpy(msg_out_buffer + strlen(msg_out_buffer), msgPointer, msgLen);
-            prepare_req_packet(&header, (uint8_t *)msg_out_buffer,
-                               strlen(msg_out_buffer), send_buffer, sizeof(send_buffer));
+            sent = prepare_req_packet(&header, (uint8_t *)msg_out_buffer, strlen(msg_out_buffer), send_buffer, sizeof(send_buffer));
             break;
         default:
             perror("invalid command");
             close(data_socket);
             continue;
         }
-        send(data_socket, send_buffer, BUFF_SZ, 0);
+
+        send(data_socket, send_buffer, sent, 0);
         close(data_socket);
     }
 }
