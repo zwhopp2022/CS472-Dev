@@ -1,0 +1,2 @@
+1. Do you think we will ever fully transition to IPv6 or will we always have the burden of maintaining the use of IPv4. Following up, do you think more could be achieved in a fully IPv6 world?
+2. One thing of interest to me is that the entire internet fully exists only because people agreed to adhere to the same standards as eachother. I find this feat even more impressive than TCP/IP itself. It is so rare to get the world to agree on the same thing.
