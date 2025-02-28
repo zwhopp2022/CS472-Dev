@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 
 #define BUFF_SZ 1024
 
@@ -63,7 +64,7 @@ int process_request(const char *host, uint16_t port, char *resource)
     int bytesSent = send(sock, req, strlen(req), 0);
     int currentBytesReceived;
 
-    while ((currentBytesReceived = recv(sock, recv_buff[total_bytes], BUFF_SZ - total_bytes, 0)) > 0)
+    while ((currentBytesReceived = recv(sock, &recv_buff[total_bytes], BUFF_SZ - total_bytes, 0)) > 0)
     {
         total_bytes += currentBytesReceived;
         printf("%.*s", currentBytesReceived, recv_buff);
@@ -80,6 +81,8 @@ int process_request(const char *host, uint16_t port, char *resource)
 
 int main(int argc, char *argv[])
 {
+    clock_t startClock, endClock;
+    startClock = clock();
     int sock;
 
     const char *host = DEFAULT_HOST;
@@ -114,4 +117,7 @@ int main(int argc, char *argv[])
             process_request(host, port, resource);
         }
     }
+    endClock = clock();
+    float runtime = (endClock - startClock) / (double)CLOCKS_PER_SEC * 1000;
+    printf("\nRuntime: %.4f milliseconds\n", runtime);
 }

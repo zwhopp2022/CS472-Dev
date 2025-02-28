@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 
 #define BUFF_SZ 1024
 #define MAX_REOPEN_TRIES 5
@@ -202,7 +203,7 @@ int submit_request(int sock, const char *host, uint16_t port, char *resource)
 
         if (bytes_recvd < 0)
         {
-            close(socket);
+            close(sock);
             return -1;
         }
         // You can uncomment out the fprintf() calls below to see what is going on
@@ -233,8 +234,9 @@ int submit_request(int sock, const char *host, uint16_t port, char *resource)
 
 int main(int argc, char *argv[])
 {
+    clock_t startClock, endClock;
+    startClock = clock();
     int sock;
-
     const char *host = DEFAULT_HOST;
     uint16_t port = DEFAULT_PORT;
     char *resource = DEFAULT_PATH;
@@ -271,4 +273,7 @@ int main(int argc, char *argv[])
     }
 
     server_disconnect(sock);
+    endClock = clock();
+    float runtime = (endClock - startClock) / (double)CLOCKS_PER_SEC * 1000;
+    printf("\nRuntime: %.4f milliseconds\n", runtime);
 }

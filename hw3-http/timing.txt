@@ -1,0 +1,18 @@
+KA3
+OK
+TOTAL BYTES: 2956
+Runtime: 2.7560 milliseconds
+OK
+TOTAL BYTES: 2956
+Runtime: 3.0820 milliseconds
+OK
+TOTAL BYTES: 2956
+Runtime: 2.3010 milliseconds
+
+CC3
+Runtime: 3.3100 milliseconds
+Runtime: 3.2200 milliseconds
+Runtime: 3.0230 milliseconds
+
+
+I Saw improved times with Keep Alive I think this is because keep alive continously tries to keep the connection stable even when it drops

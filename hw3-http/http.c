@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
@@ -181,7 +182,7 @@ int get_http_content_len(char *http_buff, int http_header_len)
         bzero(header_line, sizeof(header_line));
         sscanf(next_header_line, "%[^\r\n]s", header_line);
 
-        char *isCLHeader2 = strcasecmp(header_line, CL_HEADER);
+        // char *isCLHeader2 = strcasecmp(header_line, CL_HEADER);
         char *isCLHeader = strcasestr(header_line, CL_HEADER);
         if (isCLHeader != NULL)
         {
