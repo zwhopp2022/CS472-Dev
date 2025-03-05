@@ -22,8 +22,6 @@ static dp_connp dpinit()
     dpsession->inSockAddr.len = sizeof(struct sockaddr_in);
     dpsession->seqNum = 0;
     dpsession->isConnected = false;
-    dpsession->totalBoxes = 1;
-    dpsession->currentBox = 0;
     dpsession->dbgMode = true;
     return dpsession;
 }
@@ -128,20 +126,25 @@ dp_connp dpClientInit(char *addr, int port)
 
 int dprecv(dp_connp dp, void *buff, int buff_sz)
 {
-
+    int totalReceived = 0;
+    void *rPtr = buff;
     dp_pdu *inPdu;
-    int rcvLen = dprecvdgram(dp, _dpBuffer, sizeof(_dpBuffer));
+    bool isFragment;
+    do
+    {
+        int recvLen = dprecvdgram(dp, _dpBuffer, sizeof(_dpBuffer));
+        inPdu = (dp_pdu *)_dpBuffer;
+        char *dataPtr = (_dpBuffer + sizeof(inPdu));
+        memcpy(rPtr, dataPtr, inPdu->dgram_sz);
+        rPtr += recvLen;
+        totalReceived += recvLen;
+        isFragment = IS_MT_FRAGMENT(inPdu->mtype);
+    } while (isFragment);
 
-    if (rcvLen == DP_CONNECTION_CLOSED)
+    if (totalReceived == DP_CONNECTION_CLOSED)
         return DP_CONNECTION_CLOSED;
 
-    inPdu = (dp_pdu *)_dpBuffer;
-    if (inPdu->totalBoxes > 1)
-
-        if (rcvLen > sizeof(dp_pdu))
-            memcpy(buff, (_dpBuffer + sizeof(dp_pdu)), inPdu->dgram_sz);
-
-    return inPdu->dgram_sz;
+    return totalReceived;
 }
 
 static int dprecvdgram(dp_connp dp, void *buff, int buff_sz)
@@ -208,6 +211,13 @@ static int dprecvdgram(dp_connp dp, void *buff, int buff_sz)
         break;
     case DP_MT_CLOSE:
         outPdu.mtype = DP_MT_CLOSEACK;
+        actSndSz = dpsendraw(dp, &outPdu, sizeof(dp_pdu));
+        if (actSndSz != sizeof(dp_pdu))
+            return DP_ERROR_PROTOCOL;
+        dpclose(dp);
+        return DP_CONNECTION_CLOSED;
+    case DP_MT_SNDFRAG:
+        outPdu.mtype = DP_MT_SNDFRAGACK;
         actSndSz = dpsendraw(dp, &outPdu, sizeof(dp_pdu));
         if (actSndSz != sizeof(dp_pdu))
             return DP_ERROR_PROTOCOL;
@@ -293,24 +303,21 @@ static int dpsenddgram(dp_connp dp, void *sbuff, int sbuff_sz)
     }
 
     dp_pdu *outPdu = (dp_pdu *)_dpBuffer;
+    // Build the PDU and out buffer
+    int sndSz = sbuff_sz;
+    outPdu->proto_ver = DP_PROTO_VER_1;
+    outPdu->dgram_sz = sndSz;
+    outPdu->seqnum = dp->seqNum;
 
     if (sbuff_sz > DP_MAX_BUFF_SZ)
     {
         outPdu->mtype = DP_MT_SNDFRAG;
+        sndSz = DP_MAX_BUFF_SZ;
     }
     else
     {
         outPdu->mtype = DP_MT_SND;
     }
-
-    return DP_ERROR_GENERAL;
-
-    // Build the PDU and out buffer
-    int sndSz = sbuff_sz;
-    outPdu->proto_ver = DP_PROTO_VER_1;
-
-    outPdu->dgram_sz = sndSz;
-    outPdu->seqnum = dp->seqNum;
 
     memcpy((_dpBuffer + sizeof(dp_pdu)), sbuff, sndSz);
 
@@ -526,6 +533,8 @@ static char *pdu_msg_to_string(dp_pdu *pdu)
         return "CONNECT";
     case DP_MT_CLOSE:
         return "CLOSE";
+    case DP_MT_SNDFRAG:
+        return "SEND FRAG";
     case DP_MT_NACK:
         return "NACK";
     case DP_MT_SNDACK:
@@ -534,6 +543,8 @@ static char *pdu_msg_to_string(dp_pdu *pdu)
         return "CONNECT/ACK";
     case DP_MT_CLOSEACK:
         return "CLOSE/ACK";
+    case DP_MT_SNDFRAGACK:
+        return "SENDFRAG/ACK";
     default:
         return "***UNKNOWN***";
     }
